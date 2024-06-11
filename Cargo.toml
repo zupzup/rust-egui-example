@@ -1,0 +1,17 @@
+[package]
+name = "rust-egui-example"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sqlite = "0.36.0"
+anyhow = "1.0.82"
+eframe = { version = "0.28.0", features = ["wgpu"] }
+env_logger = "0.11.3"
+log = "0.4.21"
+ehttp = { version = "0.5.0", features = ["json"] }
+serde = { version = "1.0.203", features = ["derive"] }
+egui_extras = { version = "0.28.0", features = ["all_loaders"] }
+image = { version = "0.25", features = ["jpeg", "png"] }
