@@ -6,31 +6,72 @@ struct PetApp {
     app_state: AppState,
 }
 
-struct AppState {}
+#[derive(Debug)]
+struct AppState {
+    selected_pet: Option<Pet>,
+    pets: Vec<Pet>,
+}
 
 impl PetApp {
     fn new() -> Self {
+        let pets = vec![
+            Pet {
+                id: 1,
+                name: "minka".to_string(),
+                age: 9,
+                kind_id: 1,
+            },
+            Pet {
+                id: 2,
+                name: "nala".to_string(),
+                age: 7,
+                kind_id: 2,
+            },
+        ];
         Self {
-            app_state: AppState {},
+            app_state: AppState {
+                selected_pet: None,
+                pets,
+            },
         }
     }
 }
+#[derive(Debug, PartialEq, Clone)]
+struct Pet {
+    id: u64,
+    name: String,
+    age: u16,
+    kind_id: u64,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+struct PetKind {
+    id: u64,
+    name: String,
+}
 
 impl eframe::App for PetApp {
-    fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::SidePanel::left("left panel")
                 .resizable(false)
                 .default_width(200.0)
                 .show_inside(ui, |ui| {
                     ui.vertical_centered(|ui| {
-                        ui.heading("Left");
+                        ui.heading("Pets");
+                        self.app_state.pets.iter().for_each(|pet| {
+                            ui.selectable_value(
+                                &mut self.app_state.selected_pet,
+                                Some(pet.to_owned()),
+                                pet.name.clone(),
+                            );
+                        });
                     });
                 });
 
             egui::CentralPanel::default().show_inside(ui, |ui| {
                 ui.vertical_centered(|ui| {
-                    ui.heading("center");
+                    ui.heading("Details");
                 });
             });
         });
@@ -77,7 +118,7 @@ fn main() -> Result<()> {
     eframe::run_native(
         "PetApp",
         options,
-        Box::new(|context| Box::new(PetApp::new())),
+        Box::new(|_context| Box::new(PetApp::new())),
     )
     .map_err(|e| anyhow!("eframe error: {}", e))
 }
