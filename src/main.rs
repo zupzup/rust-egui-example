@@ -72,6 +72,7 @@ impl eframe::App for PetApp {
             egui::CentralPanel::default().show_inside(ui, |ui| {
                 ui.vertical_centered(|ui| {
                     ui.heading("Details");
+                    // TODO: fetch image and show in a box, similar to https://github.com/emilk/egui/blob/master/crates/egui_demo_app/src/apps/http_app.rs
                 });
             });
         });
