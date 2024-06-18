@@ -1,9 +1,12 @@
 use anyhow::{anyhow, Result};
 use eframe::egui;
 use std::fs;
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 struct PetApp {
     app_state: AppState,
+    background_event_sender: Sender<Event>,
+    event_receiver: Receiver<Event>,
 }
 
 #[derive(Debug)]
@@ -13,7 +16,7 @@ struct AppState {
 }
 
 impl PetApp {
-    fn new() -> Self {
+    fn new(background_event_sender: Sender<Event>, event_receiver: Receiver<Event>) -> Self {
         let pets = vec![
             Pet {
                 id: 1,
@@ -33,8 +36,15 @@ impl PetApp {
                 selected_pet: None,
                 pets,
             },
+            background_event_sender,
+            event_receiver,
         }
     }
+}
+
+enum Event {
+    GetPetImage(egui::Context),
+    SetPetImage(Option<String>),
 }
 #[derive(Debug, PartialEq, Clone)]
 struct Pet {
@@ -82,12 +92,21 @@ impl eframe::App for PetApp {
 fn main() -> Result<()> {
     env_logger::init();
 
+    let (background_event_sender, background_event_receiver) = channel::<Event>();
+    let (event_sender, event_receiver) = channel::<Event>();
+
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_always_on_top()
             .with_inner_size([640.0, 480.0]),
         ..Default::default()
     };
+
+    std::thread::spawn(move || {
+        while let Ok(event) = background_event_receiver.recv() {
+            // TODO: handle event
+        }
+    });
 
     let init_query = load_init_sql().unwrap();
     let connection = sqlite::open(":memory:").unwrap();
@@ -119,7 +138,7 @@ fn main() -> Result<()> {
     eframe::run_native(
         "PetApp",
         options,
-        Box::new(|_context| Box::new(PetApp::new())),
+        Box::new(|_context| Box::new(PetApp::new(background_event_sender, event_receiver))),
     )
     .map_err(|e| anyhow!("eframe error: {}", e))
 }
